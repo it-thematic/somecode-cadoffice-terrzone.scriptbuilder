@@ -163,6 +163,7 @@ def build_zone_to_gkn(data, tz_guid, template_dir, out_dir):
 
 # def request_location_data()
 
+
 def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
     """
     Главная функция
@@ -188,8 +189,21 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
                             # info = text_norm_arr[0].split(' ')
                             data_dict['sys_file'] = os.path.realpath(txt.name)
                             data_dict['sys_number'] = os.path.splitext(file)[0][len(cTZmask):]
+
                             data_dict['address'] = text_norm_arr[1]
-                            data_dict['district'] = text_norm_arr[1].split(' ')[2]
+
+                            list_district = text_norm_arr[1].split(',')
+                            if len(list_district) > 2:
+                                data_dict['address_for_request'] = list_district[0].strip()
+                                data_dict['district_for_request'] = data_dict['address_for_request'].split(' ')[0]
+
+                            else:
+                                print(list_district)
+                                data_dict['address_for_request'] = text_norm_arr[1]
+                                data_dict['district_for_request'] = text_norm_arr[1].split(',', maxsplit=1)[1].strip().split(' ')[0]
+
+                            data_dict['district'] = text_norm_arr[1].split(',', maxsplit=1)[1].strip()
+
                             # data_dict['number'] = info[3]
                             data_dict['name_zone'] = text_norm_arr[0]
                             data_dict['file_name'] = str(dir)
@@ -209,13 +223,15 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
                             """
                                 Получение данных из локальной базы базы ФИАС
                             """
-                            name_line = data_dict['address'].replace(',', '').replace(' ', '_')
+                            name_line = data_dict['address_for_request'].replace(',', '').replace(' ', '_')
                             text = quote('{0}'.format(name_line))
                             r = urllib.request.urlopen(fias_service.format(text))
                             data = json.loads(r.read().decode('utf-8'))
+                            print(data)
                             data.update(data_dict)
+                            print(data['region'], data['district_for_request'])
 
-                            data['cad_dis'] = cd.get_code(data['region'], data['district'])
+                            data['cad_dis'] = cd.get_code(data['region'], data['district_for_request'])
                             # data = json.loads('{}')
                             # data.update(data_dict)
 
@@ -239,7 +255,7 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
 
 
 if __name__ == '__main__':
-    tz_build(input='samples\\', output='samples\\!result\\', template=cTempalate_doc, fias_service='http://192.168.2.76:8000/api/addr_obj/{0}/', cd=CadastralDistrict('CadastralDistrict\\'))
+    tz_build(input='исх данные\\', output='исх данные\\!result\\', template=cTempalate_doc, fias_service='http://192.168.2.76:8000/api/addr_obj/{0}/', cd=CadastralDistrict('CadastralDistrict\\'))
 
 
 

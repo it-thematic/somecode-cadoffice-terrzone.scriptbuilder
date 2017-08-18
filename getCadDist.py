@@ -18,7 +18,7 @@ class CadastralDistrict:
                     r[row[0]] = row[1]
                 self.cache[region] = r
         if region in self.cache:
-            return self.cache[region].get(districtName, '-sorry-')
+            return self.cache[region].get(districtName, '{0}:00'.format(region))
         return '-sorry-'
 
 
