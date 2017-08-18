@@ -230,8 +230,8 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
                             fill_docx(file=data['sys_number'],
                                       path_to_tempalate=os.path.join(template, 'Заявление в ГКН.docx'),
                                       path_to_save=os.path.join(output, data['sys_number']),
-                                      number=data['sys_number'],
-                                      name=zone_title,
+                                      number=str(data['sys_number']),
+                                      name=str(zone_title),
                                       name_file='ZoneToGKN_{0}.zip'.format(z_guid),
                                       size='<size>')
                             print(zone_title)

@@ -17,9 +17,7 @@ def docx_replace(old_file, new_file, rep):
             bracets = tree.xpath('//w:t', namespaces=ns)
             for bracet in bracets:
                 if bracet.text in ['{', '}']:
-                    print(bracet.text)
                     bracet.text = ''
-                    print(bracet.text)
             for i in it:
                 if i.text in rep.keys():
                     i.text = rep[i.text]
@@ -32,10 +30,10 @@ def docx_replace(old_file, new_file, rep):
 def fill_docx(file, path_to_tempalate, path_to_save=os.getcwd(), **kwargs):
     if not os.path.exists(path_to_save):
         os.mkdir(path_to_save)
-    temp = {'number': "номер",
-            'name': 'наименование',
-            'name_file': 'имя файла',
-            'size': 'размер'}
+    temp = {'number': "num",
+            'name': 'name',
+            'name_file': 'file',
+            'size': 'size'}
     rep = {temp[d]: kwargs[d] for d in temp.keys()}
     docx_replace(path_to_tempalate, os.path.join(path_to_save, '{0}.docx'.format(file)), rep=rep)
     # if os.path.exists(path_to_tempalate):
@@ -56,7 +54,7 @@ def fill_docx(file, path_to_tempalate, path_to_save=os.getcwd(), **kwargs):
 
 if __name__ == '__main__':
     fill_docx(file='first',
-              path_to_tempalate='template-doc/Заявление в ГКНШаблон.docx',
+              path_to_tempalate='template-doc/Заявление в ГКН.docx',
               path_to_save='stat_docx',
               number='sdf',
               name='33',
