@@ -2,7 +2,7 @@ from docx import Document
 import os
 import zipfile
 from lxml import etree
-from lxml.etree import QName
+import datetime
 
 
 def docx_replace(old_file, new_file, rep):
@@ -33,6 +33,7 @@ def fill_docx(file, path_to_tempalate, path_to_save=os.getcwd(), **kwargs):
     temp = {'number': "num",
             'name': 'name',
             'name_file': 'file',
+            'date': 'date',
             'size': 'size'}
     rep = {temp[d]: kwargs[d] for d in temp.keys()}
     docx_replace(path_to_tempalate, os.path.join(path_to_save, '{0}.docx'.format(file)), rep=rep)
@@ -59,6 +60,7 @@ if __name__ == '__main__':
               number='sdf',
               name='33',
               name_file='43',
+              date=str(datetime.date.today().strftime('%d.%m.%Y')),
               size='ee')
 
     # xpath: //w:r[(preceding-sibling::node()/w:t='{' ) and (following-sibling::node()/w:t='}')]/w:t

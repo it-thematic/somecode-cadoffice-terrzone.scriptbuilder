@@ -233,6 +233,7 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
                                       number=str(data['sys_number']),
                                       name=str(zone_title),
                                       name_file='ZoneToGKN_{0}.zip'.format(z_guid),
+                                      date=str(datetime.date.today().strftime('%d.%m.%Y')),
                                       size='<size>')
                             print(zone_title)
 
