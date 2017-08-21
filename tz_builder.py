@@ -172,8 +172,6 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
     """
     list_dirs = os.listdir(input)
     print(list_dirs)
-    if not os.path.exists(output):
-        os.mkdir(output)
     if len(list_dirs) > 0:
         for directory in list_dirs:
             list_files = os.listdir(os.path.join(input, directory))
@@ -269,13 +267,16 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
 
 def tz_build_run(input, output, template, fias_service, cd=CadastralDistrict, hierarchy=False):
     if hierarchy:
+        if not os.path.exists(output):
+            os.mkdir(output)
         list_dirs = os.listdir(input)
         print(list_dirs)
         if len(list_dirs) > 0:
             for dirs in list_dirs:
-                dirs = os.path.join(input, dirs)
+                input_dirs = os.path.join(input, dirs)
+                output_dirs = os.path.join(output, dirs)
                 print(dirs)
-                tz_build(dirs, output, template, fias_service, cd=cd, hierarchy=True)
+                tz_build(input_dirs, output_dirs, template, fias_service, cd=cd, hierarchy=True)
     else:
         tz_build(input, output, template, fias_service, cd=cd, hierarchy=False)
 
