@@ -3,7 +3,8 @@ __author__ = 'krasnoyarov_ai@comp-tech.ru'
 
 import lxml.etree as etree
 nsSpa1 = "urn://x-artefacts-rosreestr-ru/commons/complex-types/entity-spatial/1.0.2"
-nsSpa2="urn://x-artefacts-rosreestr-ru/commons/complex-types/entity-spatial/2.0.1"
+nsSpa2 = "urn://x-artefacts-rosreestr-ru/commons/complex-types/entity-spatial/2.0.1"
+
 
 class Ordinate:
     def __init__(self,pnode):
