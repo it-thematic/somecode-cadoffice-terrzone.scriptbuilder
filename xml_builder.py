@@ -43,6 +43,11 @@ parser.add_argument('-c',
                     help='Директория содержащая коды регионов ',
                     default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'CadastralDistrict')
                     )
+parser.add_argument('-m', '--multi',
+                    dest='hierarchy',
+                    action='store_true',
+                    help='Определение структуры. True, если иерархическая. По умолчанию False'
+                    )
 
 print(parser)
 args = parser.parse_args()
@@ -53,4 +58,4 @@ if __name__ == '__main__':
                  template=args.template,
                  fias_service=args.fias,
                  cd=CadastralDistrict(args.cad_dis),
-                 hierarchy=False)
+                 hierarchy=args.hierarchy)
