@@ -2,7 +2,7 @@ import sys
 import os
 import argparse
 from getCadDist import CadastralDistrict
-from tz_builder import tz_build
+from tz_builder import tz_build_run
 
 
 def readable_dir(prospective_dir):
@@ -48,4 +48,9 @@ print(parser)
 args = parser.parse_args()
 
 if __name__ == '__main__':
-    tz_build(input=args.input, output=args.output, template=args.template, fias_service=args.fias, cd=CadastralDistrict(args.cad_dis))
+    tz_build_run(input=args.input,
+                 output=args.output,
+                 template=args.template,
+                 fias_service=args.fias,
+                 cd=CadastralDistrict(args.cad_dis),
+                 hierarchy=False)

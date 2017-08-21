@@ -13,6 +13,8 @@ import shutil
 from convert2es import mgisxy2esnode
 from getCadDist import CadastralDistrict
 from fill_statement_docx import fill_docx
+import config
+from pathlib import Path
 
 ns_TerritoryToGKN = {
             'xmlns': "urn://x-artefacts-rosreestr-ru/incoming/territory-to-gkn/1.0.4",
@@ -34,17 +36,17 @@ ns_ZoneToGKN = {
         }
 
 
-cTerritoryToGKN = 'TerritoryToGKN'
-cZoneToGKN = 'ZoneToGKN'
-cXMLext = '.xml'
-cTZmask = '__tz_'
-cTempalate_doc = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template-doc')
-cTypeUnit = 'Точка'
-cGeopointZacrep = 'Закрепление отсутствует'
-cDeltaGeopoint = '0.1'
-cGeopointOpred = '692005000000'
-cTAppliedFiles = ('{0}_графика.pdf',)
-cZAppliedFiles = ('{0}.pdf', '3941 балансовая справка.pdf')
+cTerritoryToGKN = config.cTerritoryToGKN
+cZoneToGKN = config.cZoneToGKN
+cXMLext = config.cXMLext
+cTZmask = config.cTZmask
+cTempalate_doc = config.cTempalate_doc
+cTypeUnit = config.cTypeUnit
+cGeopointZacrep = config.cGeopointOpred
+cDeltaGeopoint = config.cDeltaGeopoint
+cGeopointOpred = config.cGeopointOpred
+cTAppliedFiles = config.cTAppliedFiles
+cZAppliedFiles = config.cZAppliedFiles
 
 
 def set_node_value(node, value, attname=None):
@@ -164,21 +166,23 @@ def build_zone_to_gkn(data, tz_guid, template_dir, out_dir):
 # def request_location_data()
 
 
-def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
+def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierarchy=False):
     """
     Главная функция
     """
     list_dirs = os.listdir(input)
+    print(list_dirs)
     if not os.path.exists(output):
         os.mkdir(output)
     if len(list_dirs) > 0:
         for directory in list_dirs:
-            list_files = os.listdir(input + directory)
+            list_files = os.listdir(os.path.join(input, directory))
+            print(list_files)
             if len(list_files) > 0:
                 for file in list_files:
                     if file.startswith(cTZmask):
                         data_dict = {}
-                        with open(input + directory + '\\' + file, 'r') as txt:
+                        with open(os.path.join(input, directory, file), 'r') as txt:
                             result_directory = output + '\\' + directory
                             # if not os.path.exists(result_directory):
                             #     os.mkdir(result_directory)
@@ -188,7 +192,16 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
 
                             # info = text_norm_arr[0].split(' ')
                             data_dict['sys_file'] = os.path.realpath(txt.name)
-                            data_dict['sys_number'] = os.path.splitext(file)[0][len(cTZmask):]
+                            name_txt = os.path.splitext(file)[0][len(cTZmask):]
+                            data_dict['sys_number'] = name_txt
+                            data_dict['sys_number_docx'] = name_txt
+
+                            if hierarchy:
+                                data_dict['sys_number'] = '{0}_КТП_{1}'.format(os.path.split(input)[-1],
+                                                                               data_dict['sys_number'])
+                                data_dict['sys_number_docx'] = '{0}/{1}'.format(os.path.split(input)[-1],
+                                                                                data_dict['sys_number_docx'])
+
 
                             data_dict['address'] = text_norm_arr[1]
 
@@ -246,7 +259,7 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
                             fill_docx(file=data['sys_number'],
                                       path_to_tempalate=os.path.join(template, 'Заявление в ГКН.docx'),
                                       path_to_save=os.path.join(output, data['sys_number']),
-                                      number=str(data['sys_number']),
+                                      number=str(data['sys_number_docx']),
                                       name=str(zone_title),
                                       name_file='ZoneToGKN_{0}.zip'.format(z_guid),
                                       date=str(datetime.date.today().strftime('%d.%m.%Y')),
@@ -254,8 +267,20 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict):
                             print(zone_title)
 
 
+def tz_build_run(input, output, template, fias_service, cd=CadastralDistrict, hierarchy=False):
+    if hierarchy:
+        list_dirs = os.listdir(input)
+        print(list_dirs)
+        if len(list_dirs) > 0:
+            for dirs in list_dirs:
+                dirs = os.path.join(input, dirs)
+                print(dirs)
+                tz_build(dirs, output, template, fias_service, cd=cd, hierarchy=True)
+    else:
+        tz_build(input, output, template, fias_service, cd=cd, hierarchy=False)
+
 if __name__ == '__main__':
-    tz_build(input='исх данные\\', output='исх данные\\!result\\', template=cTempalate_doc, fias_service='http://192.168.2.76:8000/api/addr_obj/{0}/', cd=CadastralDistrict('CadastralDistrict\\'))
+    tz_build_run(input='исх данные\\', output='исх данные\\!result\\', template=cTempalate_doc, fias_service='http://192.168.2.76:8000/api/addr_obj/{0}/', cd=CadastralDistrict('CadastralDistrict\\'), hierarchy=False)
 
 
 
