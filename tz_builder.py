@@ -72,7 +72,7 @@ def build_territory_to_gkn(data, template_dir, out_dir):
 
 
     #DataManager
-    doc_dir = os.path.join(out_dir, data['sys_number'])
+    doc_dir = os.path.join(out_dir, data['parent_dir'])
     doc_file = os.path.join(doc_dir, '{0}_{1}{2}'.format(cTerritoryToGKN, doc_guid, cXMLext))
     doc_app = os.path.join(doc_dir, doc_guid)
     shutil.copytree(os.path.join(template_dir, cTerritoryToGKN), doc_app)
@@ -80,7 +80,7 @@ def build_territory_to_gkn(data, template_dir, out_dir):
     # os.rename(os.path.join(doc_dir, cTerritoryToGKN), doc_app)
     # os.rename(os.path.join(doc_dir, cTerritoryToGKN+cXMLext), doc_file)
     for i in cTAppliedFiles:
-        shutil.copyfile(os.path.join(os.path.dirname(data['sys_file']), i.format(data['sys_number'])), os.path.join(doc_app, i.format(data['sys_number'])))
+        shutil.copyfile(os.path.join(os.path.dirname(data['sys_file']), i.format(data['sys_number_for_file'])), os.path.join(doc_app, i.format(data['sys_number_for_file'])))
 
 
     #xml data writer
@@ -119,14 +119,14 @@ def build_zone_to_gkn(data, tz_guid, template_dir, out_dir):
     zone_title = 'Охранная зона {0}, адрес (местоположение): {1}'.format(data['name_zone'], data['address'])
 
     # DataManager
-    doc_dir = os.path.join(out_dir, data['sys_number'])
+    doc_dir = os.path.join(out_dir, data['parent_dir'])
     doc_file = os.path.join(doc_dir, '{0}_{1}{2}'.format(cZoneToGKN, doc_guid, cXMLext))
     doc_app = os.path.join(doc_dir, doc_guid)
     shutil.copytree(os.path.join(template_dir, cZoneToGKN), doc_app)
     shutil.copyfile(os.path.join(template_dir, cZoneToGKN + cXMLext), doc_file)
     for i in cZAppliedFiles:
-        shutil.copyfile(os.path.join(os.path.dirname(data['sys_file']), i.format(data['sys_number'])),
-                        os.path.join(doc_app, i.format(data['sys_number'])))
+        shutil.copyfile(os.path.join(os.path.dirname(data['sys_file']), i.format(data['sys_number_for_file'])),
+                        os.path.join(doc_app, i.format(data['sys_number_for_file'])))
 
 
     tree = etree.parse(doc_file, parser)
@@ -174,7 +174,10 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
     print(list_dirs)
     if len(list_dirs) > 0:
         for directory in list_dirs:
-            list_files = os.listdir(os.path.join(input, directory))
+            try:
+                list_files = os.listdir(os.path.join(input, directory))
+            except NotADirectoryError:
+                continue
             print(list_files)
             if len(list_files) > 0:
                 for file in list_files:
@@ -190,16 +193,18 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
 
                             # info = text_norm_arr[0].split(' ')
                             data_dict['sys_file'] = os.path.realpath(txt.name)
-                            name_txt = os.path.splitext(file)[0][len(cTZmask):]
-                            data_dict['sys_number'] = name_txt
-                            data_dict['sys_number_docx'] = name_txt
+                            parent_dir = os.path.splitext(file)[0][len(cTZmask):]
+
+                            data_dict['parent_dir'] = parent_dir
 
                             if hierarchy:
-                                data_dict['sys_number'] = '{0}_КТП_{1}'.format(os.path.split(input)[-1],
-                                                                               data_dict['sys_number'])
-                                data_dict['sys_number_docx'] = '{0}/{1}'.format(os.path.split(input)[-1],
-                                                                                data_dict['sys_number_docx'])
-
+                                data_dict['sys_number_for_file'] = '{0}_КТП_{1}'.format(os.path.split(input)[-1],
+                                                                               parent_dir)
+                                data_dict['sys_number'] = '{0}/{1}'.format(os.path.split(input)[-1],
+                                                                                parent_dir)
+                            else:
+                                data_dict['sys_number'] = parent_dir
+                                data_dict['sys_number_for_file'] = parent_dir
 
                             data_dict['address'] = text_norm_arr[1]
 
@@ -254,10 +259,10 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
                             # Заполнение DOCX файла
                             zone_title = 'Охранная зона {0}, адрес (местоположение): {1}'.format(data['name_zone'],
                                                                                                  data['address'])
-                            fill_docx(file=data['sys_number'],
+                            fill_docx(file=data['sys_number_for_file'],
                                       path_to_tempalate=os.path.join(template, 'Заявление в ГКН.docx'),
-                                      path_to_save=os.path.join(output, data['sys_number']),
-                                      number=str(data['sys_number_docx']),
+                                      path_to_save=os.path.join(output, data['parent_dir']),
+                                      number=str(data['sys_number']),
                                       name=str(zone_title),
                                       name_file='ZoneToGKN_{0}.zip'.format(z_guid),
                                       date=str(datetime.date.today().strftime('%d.%m.%Y')),
@@ -266,22 +271,28 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
 
 
 def tz_build_run(input, output, template, fias_service, cd=CadastralDistrict, hierarchy=False):
+    if not os.path.exists(output):
+        os.mkdir(output)
     if hierarchy:
-        if not os.path.exists(output):
-            os.mkdir(output)
         list_dirs = os.listdir(input)
         print(list_dirs)
         if len(list_dirs) > 0:
             for dirs in list_dirs:
                 input_dirs = os.path.join(input, dirs)
                 output_dirs = os.path.join(output, dirs)
+                print(input_dirs, output_dirs)
                 print(dirs)
                 tz_build(input_dirs, output_dirs, template, fias_service, cd=cd, hierarchy=True)
     else:
         tz_build(input, output, template, fias_service, cd=cd, hierarchy=False)
 
 if __name__ == '__main__':
-    tz_build_run(input='исх данные\\', output='исх данные\\!result\\', template=cTempalate_doc, fias_service='http://192.168.2.76:8000/api/addr_obj/{0}/', cd=CadastralDistrict('CadastralDistrict\\'), hierarchy=False)
+    tz_build_run(input='исх данные\\',
+                 output='исх данные\\!result\\',
+                 template=cTempalate_doc,
+                 fias_service='http://192.168.2.76:8000/api/addr_obj/{0}/',
+                 cd=CadastralDistrict('CadastralDistrict\\'),
+                 hierarchy=False)
 
 
 
