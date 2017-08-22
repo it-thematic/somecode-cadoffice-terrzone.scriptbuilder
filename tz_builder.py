@@ -72,7 +72,7 @@ def build_territory_to_gkn(data, template_dir, out_dir):
 
 
     #DataManager
-    doc_dir = os.path.join(out_dir, data['parent_dir'])
+    doc_dir = os.path.join(out_dir, data['core_number'])
     doc_file = os.path.join(doc_dir, '{0}_{1}{2}'.format(cTerritoryToGKN, doc_guid, cXMLext))
     doc_app = os.path.join(doc_dir, doc_guid)
     shutil.copytree(os.path.join(template_dir, cTerritoryToGKN), doc_app)
@@ -100,7 +100,7 @@ def build_territory_to_gkn(data, template_dir, out_dir):
     set_node_value(root.xpath('//xmlns:CoordSystems/xmlns_spat2:CoordSystem', namespaces=ns_TerritoryToGKN)[0],csr_guid, 'CsId')
 
     set_node_value(root.xpath('//xmlns:Diagram/xmlns:AppliedFile', namespaces=ns_TerritoryToGKN)[0],
-                   value=(doc_guid, data['sys_number']), attname='Name')
+                   value=(doc_guid, data['sys_number_for_file']), attname='Name')
 
     mgisxy2esnode(mgisxyfile=data['sys_file'], es=root.xpath('//xmlns:EntitySpatial', namespaces=ns_TerritoryToGKN)[0],
                   d=data['DeltaGeopoint'], gopr=data['GeopointOpred'])
@@ -119,7 +119,7 @@ def build_zone_to_gkn(data, tz_guid, template_dir, out_dir):
     zone_title = 'Охранная зона {0}, адрес (местоположение): {1}'.format(data['name_zone'], data['address'])
 
     # DataManager
-    doc_dir = os.path.join(out_dir, data['parent_dir'])
+    doc_dir = os.path.join(out_dir, data['core_number'])
     doc_file = os.path.join(doc_dir, '{0}_{1}{2}'.format(cZoneToGKN, doc_guid, cXMLext))
     doc_app = os.path.join(doc_dir, doc_guid)
     shutil.copytree(os.path.join(template_dir, cZoneToGKN), doc_app)
@@ -136,7 +136,7 @@ def build_zone_to_gkn(data, tz_guid, template_dir, out_dir):
     set_node_value(root.xpath('//xmlns:Title/xmlns_doci2:Number', namespaces=ns_ZoneToGKN)[0], data['sys_number'])
     set_node_value(root.xpath('//xmlns:Title/xmlns_doci2:Date', namespaces=ns_ZoneToGKN)[0], str(datetime.date.today()))
     for node in root.xpath('//xmlns:Documents/xmlns:Document/xmlns_doci2:AppliedFile', namespaces=ns_ZoneToGKN):
-        set_node_value(node, value=(doc_guid, data['sys_number']), attname='Name')
+        set_node_value(node, value=(doc_guid, data['sys_number_for_file']), attname='Name')
     set_node_value(root.xpath('//xmlns:NewZones/xmlns:Zone/xmlns_zone2:CadastralDistrict', namespaces=ns_ZoneToGKN)[0], data['cad_dis'])
     set_node_value(root.xpath('//xmlns:NewZones/xmlns:Zone/xmlns_zone2:CodeZoneDoc', namespaces=ns_ZoneToGKN)[0], zone_title)
     set_node_value(root.xpath('//xmlns:NewZones/xmlns:Zone/xmlns_zone2:Locations/xmlns_zone2:Location/xmlns_loc3:OKATO',
@@ -195,7 +195,7 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
                             data_dict['sys_file'] = os.path.realpath(txt.name)
                             parent_dir = os.path.splitext(file)[0][len(cTZmask):]
 
-                            data_dict['parent_dir'] = parent_dir
+                            data_dict['core_number'] = parent_dir  # имя директории файлов
 
                             if hierarchy:
                                 data_dict['sys_number_for_file'] = '{0}_КТП_{1}'.format(os.path.split(input)[-1],
@@ -203,8 +203,9 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
                                 data_dict['sys_number'] = '{0}/{1}'.format(os.path.split(input)[-1],
                                                                                 parent_dir)
                             else:
-                                data_dict['sys_number'] = parent_dir
-                                data_dict['sys_number_for_file'] = parent_dir
+                                data_dict['sys_number'] = parent_dir  # номер для записи в док и в зонтугэкаэн
+                                data_dict['sys_number_for_file'] = parent_dir  # общее имя для поиска и записи
+                                                                                #  файлов и папок
 
                             data_dict['address'] = text_norm_arr[1]
 
@@ -261,7 +262,7 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
                                                                                                  data['address'])
                             fill_docx(file=data['sys_number_for_file'],
                                       path_to_tempalate=os.path.join(template, 'Заявление в ГКН.docx'),
-                                      path_to_save=os.path.join(output, data['parent_dir']),
+                                      path_to_save=os.path.join(output, data['core_number']),
                                       number=str(data['sys_number']),
                                       name=str(zone_title),
                                       name_file='ZoneToGKN_{0}.zip'.format(z_guid),
