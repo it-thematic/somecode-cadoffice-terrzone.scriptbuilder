@@ -48,6 +48,58 @@ parser.add_argument('-m', '--multi',
                     action='store_true',
                     help='Определение структуры. True, если иерархическая. По умолчанию False'
                     )
+parser.add_argument('--TerritoryToGKN',
+                    dest='TerritoryToGKN',
+                    help='Имя TerritoryToGKN',
+                    default='TerritoryToGKN'
+                    )
+parser.add_argument('--ZoneToGKN',
+                    dest='ZoneToGKN',
+                    help='Имя ZoneToGKN',
+                    default='ZoneToGKN'
+                    )
+parser.add_argument('--XMLext',
+                    dest='XMLext',
+                    help='Формат файла для парсинга',
+                    default='.xml'
+                    )
+parser.add_argument('--TZmask',
+                    dest='TZmask',
+                    help='Маска файла txt',
+                    default='__tz_'
+                    )
+parser.add_argument('--TypeUnit',
+                    dest='TypeUnit',
+                    help='TypeUnit',
+                    default='Точка'
+                    )
+parser.add_argument('--GeopointZacrep',
+                    dest='GeopointZacrep',
+                    help='GeopointZacrep',
+                    default='Закрепление отсутствует'
+                    )
+parser.add_argument('--DeltaGeopoint',
+                    dest='DeltaGeopoint',
+                    help='DeltaGeopoint',
+                    default='0.1'
+                    )
+parser.add_argument('--GeopointOpred',
+                    dest='GeopointOpred',
+                    help='GeopointOpred',
+                    default='692005000000'
+                    )
+parser.add_argument('--TAppliedFiles',
+                    dest='TAppliedFiles',
+                    help='TAppliedFiles',
+                    nargs='+',
+                    default=['{0}_графика.pdf']
+                    )
+parser.add_argument('--ZAppliedFiles',
+                    dest='ZAppliedFiles',
+                    help='ZAppliedFiles',
+                    nargs='+',
+                    default=('{0}.pdf', '3943 балансовая справка.pdf')
+                    )
 
 print(parser)
 args = parser.parse_args()
@@ -57,5 +109,16 @@ if __name__ == '__main__':
                  output=args.output,
                  template=args.template,
                  fias_service=args.fias,
+                 TerritoryToGKN=args.TerritoryToGKN,
+                 ZoneToGKN=args.ZoneToGKN,
+                 XMLext=args.XMLext,
+                 TZmask=args.TZmask,
+                 TypeUnit=args.TypeUnit,
+                 GeopointZacrep=args.GeopointZacrep,
+                 DeltaGeopoint=args.DeltaGeopoint,
+                 GeopointOpred=args.GeopointOpred,
+                 TAppliedFiles=args.TAppliedFiles,
+                 ZAppliedFiles=args.ZAppliedFiles,
                  cd=CadastralDistrict(args.cad_dis),
-                 hierarchy=args.hierarchy)
+                 hierarchy=args.hierarchy
+                 )

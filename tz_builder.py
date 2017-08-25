@@ -13,7 +13,6 @@ import shutil
 from convert2es import mgisxy2esnode
 from getCadDist import CadastralDistrict
 from fill_statement_docx import fill_docx
-import config
 from pathlib import Path
 
 ns_TerritoryToGKN = {
@@ -36,17 +35,17 @@ ns_ZoneToGKN = {
         }
 
 
-cTerritoryToGKN = config.cTerritoryToGKN
-cZoneToGKN = config.cZoneToGKN
-cXMLext = config.cXMLext
-cTZmask = config.cTZmask
-cTempalate_doc = config.cTempalate_doc
-cTypeUnit = config.cTypeUnit
-cGeopointZacrep = config.cGeopointOpred
-cDeltaGeopoint = config.cDeltaGeopoint
-cGeopointOpred = config.cGeopointOpred
-cTAppliedFiles = config.cTAppliedFiles
-cZAppliedFiles = config.cZAppliedFiles
+cTerritoryToGKN = ''
+cZoneToGKN = ''
+cXMLext = ''
+cTZmask = ''
+cTempalate_doc = ''
+cTypeUnit = ''
+cGeopointZacrep = ''
+cDeltaGeopoint = ''
+cGeopointOpred = ''
+cTAppliedFiles = ''
+cZAppliedFiles = ''
 
 
 def set_node_value(node, value, attname=None):
@@ -271,7 +270,33 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
                             print(zone_title)
 
 
-def tz_build_run(input, output, template, fias_service, cd=CadastralDistrict, hierarchy=False):
+def tz_build_run(input, output, template, fias_service, TerritoryToGKN, ZoneToGKN, XMLext,
+                 TZmask, TypeUnit, GeopointZacrep, DeltaGeopoint, GeopointOpred, TAppliedFiles,
+                 ZAppliedFiles, cd=CadastralDistrict, hierarchy=False):
+
+    global cTerritoryToGKN
+    global cZoneToGKN
+    global cXMLext
+    global cTZmask
+    global cTempalate_doc
+    global cTypeUnit
+    global cGeopointZacrep
+    global cDeltaGeopoint
+    global cGeopointOpred
+    global cTAppliedFiles
+    global cZAppliedFiles
+    cTerritoryToGKN = TerritoryToGKN
+    cZoneToGKN = ZoneToGKN
+    cXMLext = XMLext
+    cTZmask = TZmask
+    cTempalate_doc = template
+    cTypeUnit = TypeUnit
+    cGeopointZacrep = GeopointZacrep
+    cDeltaGeopoint = DeltaGeopoint
+    cGeopointOpred = GeopointOpred
+    cTAppliedFiles = TAppliedFiles
+    cZAppliedFiles = ZAppliedFiles
+
     if not os.path.exists(output):
         os.mkdir(output)
     if hierarchy:
@@ -290,8 +315,18 @@ def tz_build_run(input, output, template, fias_service, cd=CadastralDistrict, hi
 if __name__ == '__main__':
     tz_build_run(input='исх данные\\',
                  output='исх данные\\!result\\',
-                 template=cTempalate_doc,
+                 template=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template-doc'),
                  fias_service='http://192.168.2.76:8000/api/addr_obj/{0}/',
+                 TerritoryToGKN='TerritoryToGKN',
+                 ZoneToGKN='ZoneToGKN',
+                 XMLext='.xml',
+                 TZmask='__tz_',
+                 TypeUnit='Точка',
+                 GeopointZacrep='Закрепление отсутствует',
+                 DeltaGeopoint='0.1',
+                 GeopointOpred='692005000000',
+                 TAppliedFiles=['{0}_графика.pdf'],
+                 ZAppliedFiles=('{0}.pdf', '3941 балансовая справка.pdf'),
                  cd=CadastralDistrict('CadastralDistrict\\'),
                  hierarchy=False)
 
