@@ -100,6 +100,11 @@ parser.add_argument('--ZAppliedFiles',
                     nargs='+',
                     default=('{0}.pdf', '3943 балансовая справка.pdf')
                     )
+parser.add_argument('--type',
+                    dest='type',
+                    help='type',
+                    default=None
+                    )
 
 print(parser)
 args = parser.parse_args()
@@ -119,6 +124,7 @@ if __name__ == '__main__':
                  GeopointOpred=args.GeopointOpred,
                  TAppliedFiles=args.TAppliedFiles,
                  ZAppliedFiles=args.ZAppliedFiles,
+                 type=args.type,
                  cd=CadastralDistrict(args.cad_dis),
                  hierarchy=args.hierarchy
                  )

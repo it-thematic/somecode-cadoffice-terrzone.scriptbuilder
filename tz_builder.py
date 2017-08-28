@@ -14,6 +14,7 @@ from convert2es import mgisxy2esnode
 from getCadDist import CadastralDistrict
 from fill_statement_docx import fill_docx
 from pathlib import Path
+from type_doc_addon import addDoc
 
 ns_TerritoryToGKN = {
             'xmlns': "urn://x-artefacts-rosreestr-ru/incoming/territory-to-gkn/1.0.4",
@@ -46,6 +47,7 @@ cDeltaGeopoint = ''
 cGeopointOpred = ''
 cTAppliedFiles = ''
 cZAppliedFiles = ''
+cTypeMask = ''
 
 
 def set_node_value(node, value, attname=None):
@@ -109,7 +111,7 @@ def build_territory_to_gkn(data, template_dir, out_dir):
     return doc_guid
 
 
-def build_zone_to_gkn(data, tz_guid, template_dir, out_dir):
+def build_zone_to_gkn(data, tz_guid, template_dir, out_dir, type):
     """
         Парсинг по шаблону ZoneToGKN
     """
@@ -126,7 +128,6 @@ def build_zone_to_gkn(data, tz_guid, template_dir, out_dir):
     for i in cZAppliedFiles:
         shutil.copyfile(os.path.join(os.path.dirname(data['sys_file']), i.format(data['sys_number_for_file'])),
                         os.path.join(doc_app, i.format(data['sys_number_for_file'])))
-
 
     tree = etree.parse(doc_file, parser)
     root = tree.getroot()
@@ -158,6 +159,10 @@ def build_zone_to_gkn(data, tz_guid, template_dir, out_dir):
     set_node_value(root.xpath('//xmlns:NewZones/xmlns:Zone/xmlns:SpecialZone/xmlns:Territory/xmlns_doci2:AppliedFile',
                               namespaces=ns_ZoneToGKN)[0], tz_guid, 'Name')
 
+    if type is not None:
+        addDoc(file_txt=data['type_file'], elem=root.xpath('//xmlns:Documents', namespaces=ns_ZoneToGKN)[0],
+               command=type, doc_guid=doc_guid)
+
     etree.ElementTree(root).write(doc_file, pretty_print=True, xml_declaration=True, encoding='utf-8')
 
     return doc_guid
@@ -165,7 +170,7 @@ def build_zone_to_gkn(data, tz_guid, template_dir, out_dir):
 # def request_location_data()
 
 
-def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierarchy=False):
+def tz_build(input, output, template, fias_service, type, cd=CadastralDistrict, hierarchy=False):
     """
     Главная функция
     """
@@ -179,9 +184,11 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
                 continue
             print(list_files)
             if len(list_files) > 0:
+                data_dict = {}
                 for file in list_files:
-                    if file.startswith(cTZmask):
-                        data_dict = {}
+                    if file.startswith(cTypeMask):
+                        data_dict['type_file'] = os.path.join(input, directory, file)
+                    elif file.startswith(cTZmask):
                         with open(os.path.join(input, directory, file), 'r') as txt:
                             result_directory = output + '\\' + directory
                             # if not os.path.exists(result_directory):
@@ -254,7 +261,8 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
                             #TerritoryToGKN
                             tz_guid = build_territory_to_gkn(data=data, template_dir=template, out_dir=output)
                             #ZoneToGKN
-                            z_guid = build_zone_to_gkn(data=data, tz_guid=tz_guid, template_dir=template, out_dir=output)
+                            z_guid = build_zone_to_gkn(data=data, tz_guid=tz_guid, template_dir=template,
+                                                       out_dir=output, type=type)
 
                             # Заполнение DOCX файла
                             zone_title = 'Охранная зона {0}, адрес (местоположение): {1}'.format(data['name_zone'],
@@ -272,7 +280,7 @@ def tz_build(input, output, template, fias_service, cd=CadastralDistrict, hierar
 
 def tz_build_run(input, output, template, fias_service, TerritoryToGKN, ZoneToGKN, XMLext,
                  TZmask, TypeUnit, GeopointZacrep, DeltaGeopoint, GeopointOpred, TAppliedFiles,
-                 ZAppliedFiles, cd=CadastralDistrict, hierarchy=False):
+                 ZAppliedFiles, type, cd=CadastralDistrict, hierarchy=False):
 
     global cTerritoryToGKN
     global cZoneToGKN
@@ -285,6 +293,7 @@ def tz_build_run(input, output, template, fias_service, TerritoryToGKN, ZoneToGK
     global cGeopointOpred
     global cTAppliedFiles
     global cZAppliedFiles
+    global cTypeMask
     cTerritoryToGKN = TerritoryToGKN
     cZoneToGKN = ZoneToGKN
     cXMLext = XMLext
@@ -296,7 +305,10 @@ def tz_build_run(input, output, template, fias_service, TerritoryToGKN, ZoneToGK
     cGeopointOpred = GeopointOpred
     cTAppliedFiles = TAppliedFiles
     cZAppliedFiles = ZAppliedFiles
-
+    if type == 'RT':
+        cTypeMask = '__rt_'
+    else:
+        cTypeMask = None
     if not os.path.exists(output):
         os.mkdir(output)
     if hierarchy:
@@ -308,9 +320,9 @@ def tz_build_run(input, output, template, fias_service, TerritoryToGKN, ZoneToGK
                 output_dirs = os.path.join(output, dirs)
                 print(input_dirs, output_dirs)
                 print(dirs)
-                tz_build(input_dirs, output_dirs, template, fias_service, cd=cd, hierarchy=True)
+                tz_build(input_dirs, output_dirs, template, fias_service, type, cd=cd, hierarchy=True)
     else:
-        tz_build(input, output, template, fias_service, cd=cd, hierarchy=False)
+        tz_build(input, output, template, fias_service, type, cd=cd, hierarchy=False)
 
 if __name__ == '__main__':
     tz_build_run(input='исх данные\\',
@@ -326,9 +338,10 @@ if __name__ == '__main__':
                  DeltaGeopoint='0.1',
                  GeopointOpred='692005000000',
                  TAppliedFiles=['{0}_графика.pdf'],
-                 ZAppliedFiles=('{0}.pdf', '3941 балансовая справка.pdf'),
+                 ZAppliedFiles=('{0}.pdf', '3943 балансовая справка.pdf', 'Решение.pdf'),
+                 type='RT',
                  cd=CadastralDistrict('CadastralDistrict\\'),
-                 hierarchy=False)
+                 hierarchy=True)
 
 
 

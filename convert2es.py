@@ -127,13 +127,20 @@ def mgisxy2esnode(mgisxyfile,es,d,gopr,delim=u"\t"):
             #считываем перевую точку
             line = xyf.readline()
             items = line.strip("\n").split(delim)
-            sx = float(items[0])
-            sy = float(items[1])
+            strx = items[0]
+            stry = items[1]
+            try:
+                strx.replace(',', '.')
+                stry.replace(',', '.')
+            except:
+                pass
+            sx = float(strx)
+            sy = float(stry)
             snp = items[2]
             #определяем счетчики точек
             nmb = nmb+1
             #записываем первую точку
-            spuw.write(u"Точка",str(nmb)).write(str(sx),str(sy),str(snp),d,"",gopr)
+            spuw.write(u"Точка", str(nmb)).write(str(sx), str(sy), str(snp), d, "", gopr)
             continue
 
         if (len(items)==3):
