@@ -47,7 +47,7 @@ cDeltaGeopoint = ''
 cGeopointOpred = ''
 cTAppliedFiles = ''
 cZAppliedFiles = ''
-cTypeMask = ''
+cTypeMask = 'cTypeMask'
 
 
 def set_node_value(node, value, attname=None):
@@ -307,8 +307,6 @@ def tz_build_run(input, output, template, fias_service, TerritoryToGKN, ZoneToGK
     cZAppliedFiles = ZAppliedFiles
     if type == 'RT':
         cTypeMask = '__rt_'
-    else:
-        cTypeMask = None
     if not os.path.exists(output):
         os.mkdir(output)
     if hierarchy:
